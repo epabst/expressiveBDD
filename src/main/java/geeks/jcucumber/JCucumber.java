@@ -1,7 +1,5 @@
 package geeks.jcucumber;
 
-import static org.testng.Assert.assertEquals;
-
 import java.net.URL;
 import java.io.IOException;
 import java.io.BufferedReader;
@@ -164,7 +162,9 @@ public class JCucumber {
     }
 
     private void assertMode(Mode expectedMode) {
-      assertEquals(mode, expectedMode);
+      if (mode != expectedMode) {
+        throw new AssertionError("expected the mode to be " + expectedMode + " but it was " + mode);
+      }
     }
 
     private void finished() {
