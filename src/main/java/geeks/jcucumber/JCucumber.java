@@ -40,6 +40,11 @@ public class JCucumber {
     parser.finished();
   }
 
+  /**
+   * A Parser for Cucumber feature files.
+   *
+   * @author pabstec
+   */
   private static class Parser {
     private final Expressive expressive = new Expressive(new DefaultObjectFactory());
     private Mode mode = Mode.NONE;
