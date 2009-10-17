@@ -4,7 +4,7 @@
   <groupId>geeks</groupId>
   <name>JCucumber</name>
   <artifactId>jcucumber</artifactId>
-  <version>0.2-SNAPSHOT</version>
+  <version>0.2</version>
   <packaging>jar</packaging>
   <url>http://github.com/epabst/jcucumber</url>
   <repositories>
