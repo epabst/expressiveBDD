@@ -8,7 +8,7 @@ import java.io.PrintWriter;
  *
  * @author pabstec
  */
-class WriterResultPublisher implements ResultPublisher {
+public class WriterResultPublisher implements ResultPublisher {
   private int testCount = 0;
   private int failedCount = 0;
   private final PrintWriter writer;
