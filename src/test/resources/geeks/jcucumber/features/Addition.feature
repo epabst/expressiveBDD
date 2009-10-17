@@ -20,3 +20,7 @@ Feature: Addition Using the Calculator
     And "3" is entered
     When I push "+"
     Then the result should be "1"
+
+  Scenario: composite
+    When "4 + 1" is entered
+    Then the result should be "5"

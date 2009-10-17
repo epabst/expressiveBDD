@@ -28,7 +28,7 @@ public class TestJCucumber {
 
     cucumber.run(featureUrl, Scopes.asScope(CalculatorSteps.class.getPackage()));
     System.out.println(stringWriter.toString());
-    assertEquals(resultPublisher.getTestCount(), 3);
+    assertEquals(resultPublisher.getTestCount(), 4);
     assertEquals(resultPublisher.getFailedCount(), 1);
     String output = stringWriter.toString();
     assertSubstring(output, "Feature: Addition Using the Calculator");

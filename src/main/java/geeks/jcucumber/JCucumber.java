@@ -10,12 +10,14 @@ import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.Method;
+import java.util.Set;
+import java.util.List;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import geeks.expressive.*;
-import cuke4duke.Given;
-import cuke4duke.When;
-import cuke4duke.Then;
-import cuke4duke.Before;
+import cuke4duke.*;
 
 /**
  * A simplistic implementation of Cucumber.
@@ -46,7 +48,8 @@ public class JCucumber {
    * @author pabstec
    */
   private static class Parser {
-    private final Expressive expressive = new Expressive(new DefaultObjectFactory());
+    private final DefaultObjectFactory objectFactory = new DefaultObjectFactory();
+    private final Expressive expressive = new Expressive(objectFactory);
     private Mode mode = Mode.NONE;
     private final ResultPublisher resultPublisher;
     private final Scope stepsScope;
@@ -57,9 +60,24 @@ public class JCucumber {
     private static final AnnotationMethodRegexAssociation TRANSFORM_ASSOCIATION = new AnnotationMethodRegexAssociation(Transform.class);
     private static final AnnotationMethodSpecifier BEFORE_SPECIFIER = new AnnotationMethodSpecifier(Before.class);
 
-    private Parser(ResultPublisher resultPublisher, Scope stepsScope) {
+    private Parser(ResultPublisher resultPublisher, final Scope stepsScope) {
       this.stepsScope = stepsScope;
       this.resultPublisher = resultPublisher;
+      objectFactory.addInstance(new StepMother() {
+        public void invoke(String step) {
+          MethodRegexAssociation regexAssociation = new CompositeMethodRegexAssociation(
+                  GIVEN_ASSOCIATION, WHEN_ASSOCIATION, THEN_ASSOCIATION);
+          expressive.execute(step, regexAssociation, TRANSFORM_ASSOCIATION, stepsScope);
+        }
+
+        public void invoke(String step, Table table) {
+          throw new UnsupportedOperationException("not implemented yet");
+        }
+
+        public void invoke(String step, String multiLineString) {
+          throw new UnsupportedOperationException("not implemented yet");
+        }
+      });
     }
 
     private void setMode(Mode mode) {
@@ -153,6 +171,36 @@ public class JCucumber {
       setMode(Mode.IN_FEATURE);
       setMode(Mode.NONE);
       resultPublisher.finished();
+    }
+
+    private static class CompositeMethodRegexAssociation implements MethodRegexAssociation {
+      private final List<MethodRegexAssociation> delegates;
+
+      public CompositeMethodRegexAssociation(MethodRegexAssociation... delegates) {
+        this(Arrays.asList(delegates));
+      }
+
+      public CompositeMethodRegexAssociation(List<MethodRegexAssociation> delegates) {
+        this.delegates = delegates;
+      }
+
+      public String findRegex(Method method) {
+        for (MethodRegexAssociation association : delegates) {
+          String regex = association.findRegex(method);
+          if (regex != null) {
+            return regex;
+          }
+        }
+        return null;
+      }
+
+      public Set<Method> getMethods(Scope scope) {
+        Set<Method> methods = new HashSet<Method>();
+        for (MethodRegexAssociation association : delegates) {
+          methods.addAll(association.getMethods(scope));
+        }
+        return methods;
+      }
     }
   }
 
