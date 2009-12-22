@@ -7,6 +7,10 @@
   <version>0.3-SNAPSHOT</version>
   <packaging>jar</packaging>
   <url>http://github.com/epabst/jcucumber</url>
+  <scm>
+    <connection>scm:git:git://github.com/epabst/jcucumber.git</connection>
+    <url>scm:git:https:g//github.com/epabst/jcucumber</url>
+  </scm>
   <repositories>
     <repository>
       <id>codehaus</id>
