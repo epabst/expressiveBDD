@@ -26,6 +26,11 @@ public class CalculatorSteps {
     stack.clear();
   }
 
+  @After()
+  public void incrementRunCount() {
+    runCount++;
+  }
+
   @Given("^\"([0-9]+)\" is entered$")
   public void numberIsEntered(int number) {
     stack.push(number);
@@ -51,10 +56,5 @@ public class CalculatorSteps {
   @Transform("^([0-9]+)$")
   public int integer(String number) {
     return Integer.parseInt(number);
-  }
-
-  @After()
-  public void incrementRunCount() {
-    runCount++;
   }
 }
