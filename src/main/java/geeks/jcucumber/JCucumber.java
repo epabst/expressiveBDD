@@ -109,12 +109,6 @@ public class JCucumber {
       setMode(Mode.IN_FEATURE);
     }
 
-    @Command("^(\\s*\\@.*)$")
-    public void tag(String line) {
-      setMode(Mode.IN_FEATURE);
-      resultPublisher.writeln(line);
-    }
-
     @Command("^(\\s*Scenario: .*)$")
     public void scenario(String scenario) {
       setMode(Mode.IN_FEATURE);
@@ -158,7 +152,6 @@ public class JCucumber {
 
     @Command(Expressive.EVERYTHING_ELSE_REGEX)
     public void everythingElse(String line) {
-      assertMode(Mode.IN_FEATURE, line);
       resultPublisher.writeln(line);
     }
 

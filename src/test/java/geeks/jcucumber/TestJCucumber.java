@@ -70,6 +70,21 @@ public class TestJCucumber {
     assertEquals(resultPublisher.getFailedCount(), 0, stringWriter.toString());
   }
 
+  @Test
+  public void shouldIgnoreExtraTextLines() throws IOException {
+    cucumber.run(new StringReader(
+            "Feature: Ignore Text Lines\n" +
+            "  extra text\n" +
+            "  Scenario: some prior scenario\n" +
+            "    Given no more work to do\n" +
+            "\n" +
+            "  more extra text\n" +
+            "  Scenario: some scenario\n" +
+            "    Given no more work to do"), Scopes.asScope(CalculatorSteps.class));
+    assertEquals(resultPublisher.getTestCount(), 2, stringWriter.toString());
+    assertEquals(resultPublisher.getFailedCount(), 0, stringWriter.toString());
+  }
+
   @Given("a serious error occurs")
   public void aSeriousErrorOccurs() {
     throw new OutOfMemoryError("false alarm");
