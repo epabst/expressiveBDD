@@ -1,6 +1,7 @@
 package geeks.jcucumber;
 
 import org.testng.annotations.Test;
+import org.testng.annotations.BeforeMethod;
 import static org.testng.Assert.*;
 
 import java.io.IOException;
@@ -19,11 +20,12 @@ import cuke4duke.Given;
  * @author pabstec
  */
 public class TestJCucumber {
+  private StringWriter stringWriter;
+  private WriterResultPublisher resultPublisher;
+  private JCucumber cucumber;
+
   @Test
   public void shouldSupportCucumber() throws IOException {
-    StringWriter stringWriter = new StringWriter();
-    WriterResultPublisher resultPublisher = new WriterResultPublisher(stringWriter);
-    JCucumber cucumber = new JCucumber(resultPublisher);
     URL featureUrl = getClass().getResource("features/Addition.feature");
     assertNotNull(featureUrl, "features/Addition.feature should be available");
 
@@ -40,18 +42,32 @@ public class TestJCucumber {
 
   @Test
   public void shouldNotEatSeriousError() throws IOException {
-    JCucumber jCucumber = new JCucumber(new WriterResultPublisher(new StringWriter()));
     StringReader reader = new StringReader(
             "Scenario: Serious Error\n" +
             "  Given a serious error occurs");
     Scope scope = Scopes.asScope(TestJCucumber.class);
     try {
-      jCucumber.run(reader, scope);
+      cucumber.run(reader, scope);
       fail("expected exception");
     }
     catch (OutOfMemoryError e) {
       assertEquals("false alarm", e.getMessage());
     }
+  }
+
+  @Test
+  public void shouldIgnoreTags() throws IOException {
+    cucumber.run(new StringReader(
+            "Feature: Ignore tags\n" +
+            "  @scenario1\n" +
+            "  Scenario: some prior scenario\n" +
+            "    Given no more work to do\n" +
+            "\n" +
+            "  @mytag\n" +
+            "  Scenario: some scenario\n" +
+            "    Given no more work to do"), Scopes.asScope(CalculatorSteps.class));
+    assertEquals(resultPublisher.getTestCount(), 2, stringWriter.toString());
+    assertEquals(resultPublisher.getFailedCount(), 0, stringWriter.toString());
   }
 
   @Given("a serious error occurs")
@@ -61,5 +77,12 @@ public class TestJCucumber {
 
   private void assertSubstring(String string, String expectedSubstring) {
     assertTrue(string.contains(expectedSubstring), "Expected '" + expectedSubstring + "' within '" + string + "'");
+  }
+
+  @BeforeMethod
+  protected void setUp() throws Exception {
+    stringWriter = new StringWriter();
+    resultPublisher = new WriterResultPublisher(stringWriter);
+    cucumber = new JCucumber(resultPublisher);
   }
 }

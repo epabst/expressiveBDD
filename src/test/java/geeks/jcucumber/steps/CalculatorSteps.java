@@ -53,6 +53,11 @@ public class CalculatorSteps {
     assertEquals(stack.size(), 1, "stack size");
   }
 
+  @Given("^no more work to do$")
+  public void noMoreWorkToDo() {
+    //do nothing
+  }
+
   @Transform("^([0-9]+)$")
   public int integer(String number) {
     return Integer.parseInt(number);

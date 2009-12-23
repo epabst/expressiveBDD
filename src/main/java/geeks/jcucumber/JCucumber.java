@@ -86,7 +86,7 @@ public class JCucumber {
     }
 
     private void setMode(Mode mode) {
-      if (this.mode == Mode.IN_SCENARIO_AFTER_WHEN && mode == Mode.IN_FEATURE) {
+      if ((this.mode == Mode.IN_SCENARIO_AFTER_WHEN || this.mode == Mode.IN_SCENARIO_BEFORE_WHEN) && mode == Mode.IN_FEATURE) {
         if (stepFailedCountForScenario != 0) {
           resultPublisher.failed();
         }
@@ -104,9 +104,15 @@ public class JCucumber {
 
     @Command("^(Feature: .*)$")
     public void feature(String feature) {
-      assertMode(Mode.NONE);
+      assertMode(Mode.NONE, feature);
       resultPublisher.writeln(feature);
       setMode(Mode.IN_FEATURE);
+    }
+
+    @Command("^(\\s*\\@.*)$")
+    public void tag(String line) {
+      setMode(Mode.IN_FEATURE);
+      resultPublisher.writeln(line);
     }
 
     @Command("^(\\s*Scenario: .*)$")
@@ -118,27 +124,27 @@ public class JCucumber {
 
     @Command("^(\\s*Given (.*))$")
     public void given(String string, String step) {
-      assertMode(Mode.IN_SCENARIO_BEFORE_WHEN);
+      assertMode(Mode.IN_SCENARIO_BEFORE_WHEN, string);
       executeStepAndWriteString(string, step, GIVEN_ASSOCIATION);
     }
 
     @Command("^(\\s*When (.*))$")
     public void when(String string, String step) {
-      assertMode(Mode.IN_SCENARIO_BEFORE_WHEN);
+      assertMode(Mode.IN_SCENARIO_BEFORE_WHEN, string);
       executeStepAndWriteString(string, step, WHEN_ASSOCIATION);
       setMode(Mode.IN_SCENARIO_AFTER_WHEN);
     }
 
     @Command("^(\\s*Then (.*))$")
     public void then(String string, String step) {
-      assertMode(Mode.IN_SCENARIO_AFTER_WHEN);
+      assertMode(Mode.IN_SCENARIO_AFTER_WHEN, string);
       executeStepAndWriteString(string, step, THEN_ASSOCIATION);
     }
 
     @Command("^(\\s*And (.*))$")
     public void and(String string, String step) {
       if (mode != Mode.IN_SCENARIO_AFTER_WHEN) {
-        assertMode(Mode.IN_SCENARIO_BEFORE_WHEN);
+        assertMode(Mode.IN_SCENARIO_BEFORE_WHEN, string);
         given(string, step);
       } else {
         then(string, step);
@@ -152,7 +158,7 @@ public class JCucumber {
 
     @Command(Expressive.EVERYTHING_ELSE_REGEX)
     public void everythingElse(String line) {
-      assertMode(Mode.IN_FEATURE);
+      assertMode(Mode.IN_FEATURE, line);
       resultPublisher.writeln(line);
     }
 
@@ -175,9 +181,9 @@ public class JCucumber {
       }
     }
 
-    private void assertMode(Mode expectedMode) {
+    private void assertMode(Mode expectedMode, String statement) {
       if (mode != expectedMode) {
-        throw new AssertionError("expected the mode to be " + expectedMode + " but it was " + mode);
+        throw new AssertionError("expected the mode to be " + expectedMode + " but it was " + mode + " for '" + statement + "'");
       }
     }
 
