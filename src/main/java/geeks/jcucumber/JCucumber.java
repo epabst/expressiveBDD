@@ -25,9 +25,11 @@ import cuke4duke.*;
 public class JCucumber {
   private static final AnnotationMethodRegexAssociation COMMAND_ASSOCIATION = new AnnotationMethodRegexAssociation(Command.class);
   private final ResultPublisher resultPublisher;
+  private final Scope parserScope;
 
   public JCucumber(ResultPublisher resultPublisher) {
     this.resultPublisher = resultPublisher;
+    this.parserScope = Scopes.asScope(Parser.class);
   }
 
   public void run(URL featureResource, Scope stepsScope) throws IOException {
@@ -35,8 +37,7 @@ public class JCucumber {
     Parser parser = new Parser(resultPublisher, stepsScope);
     ObjectFactory objectFactory = new DefaultObjectFactory();
     objectFactory.addInstance(parser);
-    new Expressive(objectFactory).execute(reader, COMMAND_ASSOCIATION, Parser.TRANSFORM_ASSOCIATION,
-            Scopes.asScope(Parser.class));
+    new Expressive(objectFactory).execute(reader, COMMAND_ASSOCIATION, Parser.TRANSFORM_ASSOCIATION, parserScope);
     parser.finished();
   }
 
