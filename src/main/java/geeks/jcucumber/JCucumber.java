@@ -4,6 +4,7 @@ import java.net.URL;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -33,11 +34,15 @@ public class JCucumber {
   }
 
   public void run(URL featureResource, Scope stepsScope) throws IOException {
-    BufferedReader reader = new BufferedReader(new InputStreamReader(featureResource.openStream(), "UTF-8"));
+    run(new InputStreamReader(featureResource.openStream(), "UTF-8"), stepsScope);
+  }
+
+  public void run(Reader reader, Scope stepsScope) throws IOException {
+    BufferedReader bufferedReader = new BufferedReader(reader);
     Parser parser = new Parser(resultPublisher, stepsScope);
     ObjectFactory objectFactory = new DefaultObjectFactory();
     objectFactory.addInstance(parser);
-    new Expressive(objectFactory).execute(reader, COMMAND_ASSOCIATION, Parser.TRANSFORM_ASSOCIATION, parserScope);
+    new Expressive(objectFactory).execute(bufferedReader, COMMAND_ASSOCIATION, Parser.TRANSFORM_ASSOCIATION, parserScope);
     parser.finished();
   }
 
@@ -161,6 +166,12 @@ public class JCucumber {
       } catch (AssertionError e) {
         stepFailedCountForScenario++;
         resultPublisher.stepFailed(stepLine, e);
+      } catch (Error e) {
+        stepFailedCountForScenario++;
+        resultPublisher.stepFailed(stepLine, e);
+        if (e.getClass().getName().startsWith("java.lang.")) {
+          throw e;
+        }
       }
     }
 

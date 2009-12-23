@@ -1,16 +1,17 @@
 package geeks.jcucumber;
 
 import org.testng.annotations.Test;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.*;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.StringReader;
 import java.net.URL;
 
 import geeks.expressive.Scopes;
+import geeks.expressive.Scope;
 import geeks.jcucumber.steps.CalculatorSteps;
+import cuke4duke.Given;
 
 /**
  * A test to show support for doing what Cucumber does.
@@ -35,6 +36,27 @@ public class TestJCucumber {
     assertSubstring(output, "Scenario: 1+1");
     assertSubstring(output, "Then the result should be \"3\"");
     assertSubstring(output, "FAILED:    Then the result should be \"1\"");
+  }
+
+  @Test
+  public void shouldNotEatSeriousError() throws IOException {
+    JCucumber jCucumber = new JCucumber(new WriterResultPublisher(new StringWriter()));
+    StringReader reader = new StringReader(
+            "Scenario: Serious Error\n" +
+            "  Given a serious error occurs");
+    Scope scope = Scopes.asScope(TestJCucumber.class);
+    try {
+      jCucumber.run(reader, scope);
+      fail("expected exception");
+    }
+    catch (OutOfMemoryError e) {
+      assertEquals("false alarm", e.getMessage());
+    }
+  }
+
+  @Given("a serious error occurs")
+  public void aSeriousErrorOccurs() {
+    throw new OutOfMemoryError("false alarm");
   }
 
   private void assertSubstring(String string, String expectedSubstring) {
