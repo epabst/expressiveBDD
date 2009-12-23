@@ -6,10 +6,7 @@ import java.util.Stack;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
-import cuke4duke.Before;
-import cuke4duke.Given;
-import cuke4duke.When;
-import cuke4duke.Then;
+import cuke4duke.*;
 import geeks.jcucumber.Transform;
 
 /**
@@ -19,6 +16,8 @@ import geeks.jcucumber.Transform;
  */
 public class CalculatorSteps {
   private final Stack<Integer> stack = new Stack<Integer>();
+  private int runCount = 0;
+  private int runCountFromLastWhen = -1;
   private static final Logger LOGGER = Logger.getLogger(CalculatorSteps.class.getName());
   private static final Level DEBUG_LEVEL = Level.FINE;
 
@@ -35,6 +34,8 @@ public class CalculatorSteps {
 
   @When("^I push \"\\+\"$")
   public void add() {
+    assertEquals(runCountFromLastWhen, runCount - 1, "run count should match");
+    runCountFromLastWhen = runCount;
     LOGGER.log(DEBUG_LEVEL, "stack before +: " + stack);
     stack.push(stack.pop() + stack.pop());
     LOGGER.log(DEBUG_LEVEL, "stack after +: " + stack);
@@ -50,5 +51,10 @@ public class CalculatorSteps {
   @Transform("^([0-9]+)$")
   public int integer(String number) {
     return Integer.parseInt(number);
+  }
+
+  @After()
+  public void incrementRunCount() {
+    runCount++;
   }
 }

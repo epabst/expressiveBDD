@@ -58,6 +58,7 @@ public class JCucumber {
     private static final AnnotationMethodRegexAssociation THEN_ASSOCIATION = new AnnotationMethodRegexAssociation(Then.class);
     private static final AnnotationMethodRegexAssociation TRANSFORM_ASSOCIATION = new AnnotationMethodRegexAssociation(Transform.class);
     private static final AnnotationMethodSpecifier BEFORE_SPECIFIER = new AnnotationMethodSpecifier(Before.class);
+    private static final AnnotationMethodSpecifier AFTER_SPECIFIER = new AnnotationMethodSpecifier(After.class);
 
     private Parser(ResultPublisher resultPublisher, final Scope stepsScope) {
       this.stepsScope = stepsScope;
@@ -87,6 +88,7 @@ public class JCucumber {
         else {
           resultPublisher.succeeded();
         }
+        expressive.executeEvent(AFTER_SPECIFIER, stepsScope);
       }
       else if (this.mode == Mode.IN_FEATURE && mode == Mode.IN_SCENARIO_BEFORE_WHEN) {
         stepFailedCountForScenario = 0;
