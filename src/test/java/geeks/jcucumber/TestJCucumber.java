@@ -12,6 +12,7 @@ import java.net.URL;
 import geeks.expressive.Scopes;
 import geeks.expressive.Scope;
 import geeks.jcucumber.steps.CalculatorSteps;
+import geeks.jcucumber.steps.StepsRequiringNonStepComponent;
 import cuke4duke.Given;
 
 /**
@@ -82,6 +83,16 @@ public class TestJCucumber {
             "  Scenario: some scenario\n" +
             "    Given no more work to do"), Scopes.asScope(CalculatorSteps.class));
     assertEquals(resultPublisher.getTestCount(), 2, stringWriter.toString());
+    assertEquals(resultPublisher.getFailedCount(), 0, stringWriter.toString());
+  }
+
+  @Test
+  public void shouldSupportNonStepComponents() throws IOException {
+    cucumber.run(new StringReader(
+            "Feature: Support Non-Step Components\n" +
+            "  Scenario: #1\n" +
+            "    Given a non-step component is required"), Scopes.asScope(StepsRequiringNonStepComponent.class));
+    assertEquals(resultPublisher.getTestCount(), 1, stringWriter.toString());
     assertEquals(resultPublisher.getFailedCount(), 0, stringWriter.toString());
   }
 
