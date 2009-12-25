@@ -9,7 +9,7 @@ import java.io.PrintWriter;
  * @author pabstec
  */
 public class WriterResultPublisher implements ResultPublisher {
-  private int testCount = 0;
+  private int scenarioCount = 0;
   private int failedCount = 0;
   private final PrintWriter writer;
   private String scenarioName;
@@ -40,17 +40,17 @@ public class WriterResultPublisher implements ResultPublisher {
 
   public void succeeded() {
     writeln("  " + scenarioName + " succeeded :)");
-    testCount++;
+    scenarioCount++;
   }
 
   public void failed() {
     writeln("  " + scenarioName + " failed :(");
-    testCount++;
+    scenarioCount++;
     failedCount++;
   }
 
-  public int getTestCount() {
-    return testCount;
+  public int getScenarioCount() {
+    return scenarioCount;
   }
 
   public int getFailedCount() {
@@ -59,6 +59,6 @@ public class WriterResultPublisher implements ResultPublisher {
 
   public void finished() {
     writeln("-----------------------------------------------");
-    writeln("Total tests: " + getTestCount() + "   Failed: " + getFailedCount());
+    writeln("Total scenarios: " + getScenarioCount() + "   Failed: " + getFailedCount());
   }
 }

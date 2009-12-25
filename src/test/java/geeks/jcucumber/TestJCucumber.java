@@ -32,7 +32,7 @@ public class TestJCucumber {
 
     cucumber.run(featureUrl, Scopes.asScope(CalculatorSteps.class.getPackage()));
     System.out.println(stringWriter.toString());
-    assertEquals(resultPublisher.getTestCount(), 4);
+    assertEquals(resultPublisher.getScenarioCount(), 4);
     assertEquals(resultPublisher.getFailedCount(), 1);
     String output = stringWriter.toString();
     assertSubstring(output, "Feature: Addition Using the Calculator");
@@ -67,7 +67,7 @@ public class TestJCucumber {
             "  @mytag\n" +
             "  Scenario: some scenario\n" +
             "    Given no more work to do"), Scopes.asScope(CalculatorSteps.class));
-    assertEquals(resultPublisher.getTestCount(), 2, stringWriter.toString());
+    assertEquals(resultPublisher.getScenarioCount(), 2, stringWriter.toString());
     assertEquals(resultPublisher.getFailedCount(), 0, stringWriter.toString());
   }
 
@@ -82,7 +82,7 @@ public class TestJCucumber {
             "  more extra text\n" +
             "  Scenario: some scenario\n" +
             "    Given no more work to do"), Scopes.asScope(CalculatorSteps.class));
-    assertEquals(resultPublisher.getTestCount(), 2, stringWriter.toString());
+    assertEquals(resultPublisher.getScenarioCount(), 2, stringWriter.toString());
     assertEquals(resultPublisher.getFailedCount(), 0, stringWriter.toString());
   }
 
@@ -92,7 +92,7 @@ public class TestJCucumber {
             "Feature: Support Non-Step Components\n" +
             "  Scenario: #1\n" +
             "    Given a non-step component is required"), Scopes.asScope(StepsRequiringNonStepComponent.class));
-    assertEquals(resultPublisher.getTestCount(), 1, stringWriter.toString());
+    assertEquals(resultPublisher.getScenarioCount(), 1, stringWriter.toString());
     assertEquals(resultPublisher.getFailedCount(), 0, stringWriter.toString());
   }
 
