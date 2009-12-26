@@ -41,7 +41,7 @@ public class JCucumber {
     BufferedReader bufferedReader = new BufferedReader(reader);
     Parser parser = new Parser(resultPublisher, stepsScope);
     ObjectFactory objectFactory = new DefaultObjectFactory();
-    objectFactory.addInstance(parser);
+    objectFactory.addInstance(Parser.class, parser);
     new Expressive(objectFactory).execute(bufferedReader, COMMAND_ASSOCIATION, Parser.TRANSFORM_ASSOCIATION, parserScope);
     parser.finished();
   }
@@ -52,7 +52,7 @@ public class JCucumber {
    * @author pabstec
    */
   private static class Parser {
-    private final DefaultObjectFactory objectFactory = new DefaultObjectFactory();
+    private final ObjectFactory objectFactory = new DefaultObjectFactory();
     private final Expressive expressive = new Expressive(objectFactory);
     private Mode mode = Mode.NONE;
     private final ResultPublisher resultPublisher;
@@ -68,7 +68,7 @@ public class JCucumber {
     private Parser(ResultPublisher resultPublisher, final Scope stepsScope) {
       this.stepsScope = stepsScope;
       this.resultPublisher = resultPublisher;
-      objectFactory.addInstance(new StepMother() {
+      objectFactory.addInstance(StepMother.class, new StepMother() {
         public void invoke(String step) {
           MethodRegexAssociation regexAssociation = new CompositeMethodRegexAssociation(
                   GIVEN_ASSOCIATION, WHEN_ASSOCIATION, THEN_ASSOCIATION);
