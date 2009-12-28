@@ -85,7 +85,7 @@ public class JCucumber {
       expressive.execute(step, regexAssociation, TRANSFORM_ASSOCIATION, stepsScope);
     }
 
-    protected void executeEvent(AnnotationMethodSpecifier eventSpecifier) {
+    protected void executeEvent(MethodSpecifier eventSpecifier) {
       expressive.executeEvent(eventSpecifier, stepsScope);
     }
   }
