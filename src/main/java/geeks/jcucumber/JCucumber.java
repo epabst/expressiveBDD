@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 
 import geeks.expressive.*;
-import geeks.jcucumber.internal.JCucumberStepMother;
 import geeks.jcucumber.internal.Parser;
 
 /**
@@ -31,7 +30,7 @@ public class JCucumber {
     parserObjectFactory.addInstance(ResultPublisher.class, resultPublisher);
     parserObjectFactory.addInstance(Scope.class, stepsScope);
     new Expressive(parserObjectFactory).execute(new BufferedReader(reader), Parser.COMMAND_ASSOCIATION,
-            JCucumberStepMother.TRANSFORM_ASSOCIATION, Scopes.asScope(Parser.class));
+            MethodRegexAssociation.NONE, Scopes.asScope(Parser.class));
     parserObjectFactory.getInstance(Parser.class).finished();
   }
 

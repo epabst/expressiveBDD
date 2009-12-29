@@ -3,6 +3,8 @@ package geeks.jcucumber.internal;
 import geeks.jcucumber.ResultPublisher;
 import geeks.expressive.*;
 import cuke4duke.StepMother;
+import cuke4duke.Before;
+import cuke4duke.After;
 
 import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
@@ -21,6 +23,8 @@ public class Parser {
   private Mode mode = Mode.NONE;
   private int stepFailedCountForScenario;
   public static final AnnotationMethodRegexAssociation COMMAND_ASSOCIATION = new AnnotationMethodRegexAssociation(Command.class);
+  private static final AnnotationMethodSpecifier BEFORE_SPECIFIER = new AnnotationMethodSpecifier(Before.class);
+  private static final AnnotationMethodSpecifier AFTER_SPECIFIER = new AnnotationMethodSpecifier(After.class);
 
   public Parser(ResultPublisher resultPublisher, final Scope stepsScope) {
     ObjectFactory stepsObjectFactory = new DefaultObjectFactory();
@@ -40,11 +44,11 @@ public class Parser {
       else {
         resultPublisher.succeeded();
       }
-      stepMother.invokeEvent(JCucumberStepMother.AFTER_SPECIFIER);
+      stepMother.invokeEvent(AFTER_SPECIFIER);
     }
     else if (this.mode == Mode.IN_FEATURE && mode == Mode.IN_SCENARIO_BEFORE_WHEN) {
       stepFailedCountForScenario = 0;
-      stepMother.invokeEvent(JCucumberStepMother.BEFORE_SPECIFIER);
+      stepMother.invokeEvent(BEFORE_SPECIFIER);
     }
     this.mode = mode;
   }
