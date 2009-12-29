@@ -9,13 +9,10 @@ import java.lang.annotation.Target;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import geeks.expressive.*;
+import geeks.jcucumber.internal.JCucumberStepMother;
+import geeks.jcucumber.internal.ScenarioContext;
 import cuke4duke.*;
 
 /**
@@ -25,12 +22,6 @@ import cuke4duke.*;
  */
 public class JCucumber {
   private static final AnnotationMethodRegexAssociation COMMAND_ASSOCIATION = new AnnotationMethodRegexAssociation(Command.class);
-  private static final AnnotationMethodRegexAssociation GIVEN_ASSOCIATION = new AnnotationMethodRegexAssociation(Given.class);
-  private static final AnnotationMethodRegexAssociation WHEN_ASSOCIATION = new AnnotationMethodRegexAssociation(When.class);
-  private static final AnnotationMethodRegexAssociation THEN_ASSOCIATION = new AnnotationMethodRegexAssociation(Then.class);
-  private static final AnnotationMethodRegexAssociation TRANSFORM_ASSOCIATION = new AnnotationMethodRegexAssociation(Transform.class);
-  private static final AnnotationMethodSpecifier BEFORE_SPECIFIER = new AnnotationMethodSpecifier(Before.class);
-  private static final AnnotationMethodSpecifier AFTER_SPECIFIER = new AnnotationMethodSpecifier(After.class);
   private final ResultPublisher resultPublisher;
   private final Scope parserScope;
 
@@ -48,53 +39,8 @@ public class JCucumber {
     Parser parser = new Parser(resultPublisher, stepsScope);
     ObjectFactory parserObjectFactory = new DefaultObjectFactory();
     parserObjectFactory.addInstance(Parser.class, parser);
-    new Expressive(parserObjectFactory).execute(bufferedReader, COMMAND_ASSOCIATION, TRANSFORM_ASSOCIATION, parserScope);
+    new Expressive(parserObjectFactory).execute(bufferedReader, COMMAND_ASSOCIATION, JCucumberStepMother.TRANSFORM_ASSOCIATION, parserScope);
     parser.finished();
-  }
-
-  /**
-   * A context for running a JCucumber scenario.
-   *
-   * @author pabstec
-   */
-  static class ScenarioContext {
-    private final Expressive expressive;
-    private final Scope stepsScope;
-
-    public ScenarioContext(final Scope stepsScope, ObjectFactory objectFactory) {
-      this.stepsScope = stepsScope;
-      expressive = new Expressive(objectFactory);
-    }
-
-    protected static void execute(Expressive expressive, Scope stepsScope, String step, MethodRegexAssociation regexAssociation) {
-      expressive.execute(step, regexAssociation, TRANSFORM_ASSOCIATION, stepsScope);
-    }
-
-    protected static void executeEvent(Expressive expressive, Scope stepsScope, MethodSpecifier eventSpecifier) {
-      expressive.executeEvent(eventSpecifier, stepsScope);
-    }
-  }
-
-  private static class JCucumberStepMother implements StepMother {
-    private final ScenarioContext scenarioContext;
-
-    public JCucumberStepMother(ScenarioContext scenarioContext) {
-      this.scenarioContext = scenarioContext;
-    }
-
-    public void invoke(String step) {
-      MethodRegexAssociation regexAssociation = new CompositeMethodRegexAssociation(
-              GIVEN_ASSOCIATION, WHEN_ASSOCIATION, THEN_ASSOCIATION);
-      ScenarioContext.execute(scenarioContext.expressive, scenarioContext.stepsScope, step, regexAssociation);
-    }
-
-    public void invoke(String step, Table table) {
-      throw new UnsupportedOperationException("not implemented yet");
-    }
-
-    public void invoke(String step, String multiLineString) {
-      throw new UnsupportedOperationException("not implemented yet");
-    }
   }
 
   /**
@@ -125,11 +71,11 @@ public class JCucumber {
         else {
           resultPublisher.succeeded();
         }
-        ScenarioContext.executeEvent(scenarioContext.expressive, scenarioContext.stepsScope, AFTER_SPECIFIER);
+        ScenarioContext.executeEvent(scenarioContext.expressive, scenarioContext.stepsScope, JCucumberStepMother.AFTER_SPECIFIER);
       }
       else if (this.mode == Mode.IN_FEATURE && mode == Mode.IN_SCENARIO_BEFORE_WHEN) {
         stepFailedCountForScenario = 0;
-        ScenarioContext.executeEvent(scenarioContext.expressive, scenarioContext.stepsScope, BEFORE_SPECIFIER);
+        ScenarioContext.executeEvent(scenarioContext.expressive, scenarioContext.stepsScope, JCucumberStepMother.BEFORE_SPECIFIER);
       }
       this.mode = mode;
     }
@@ -151,20 +97,20 @@ public class JCucumber {
     @Command("^(\\s*Given (.*))$")
     public void given(String string, String step) {
       assertMode(Mode.IN_SCENARIO_BEFORE_WHEN, string);
-      executeStepAndWriteString(string, step, GIVEN_ASSOCIATION);
+      executeStepAndWriteString(string, step, JCucumberStepMother.GIVEN_ASSOCIATION);
     }
 
     @Command("^(\\s*When (.*))$")
     public void when(String string, String step) {
       assertMode(Mode.IN_SCENARIO_BEFORE_WHEN, string);
-      executeStepAndWriteString(string, step, WHEN_ASSOCIATION);
+      executeStepAndWriteString(string, step, JCucumberStepMother.WHEN_ASSOCIATION);
       setMode(Mode.IN_SCENARIO_AFTER_WHEN);
     }
 
     @Command("^(\\s*Then (.*))$")
     public void then(String string, String step) {
       assertMode(Mode.IN_SCENARIO_AFTER_WHEN, string);
-      executeStepAndWriteString(string, step, THEN_ASSOCIATION);
+      executeStepAndWriteString(string, step, JCucumberStepMother.THEN_ASSOCIATION);
     }
 
     @Command("^(\\s*And (.*))$")
@@ -218,36 +164,6 @@ public class JCucumber {
       resultPublisher.finished();
     }
 
-  }
-
-  private static class CompositeMethodRegexAssociation implements MethodRegexAssociation {
-    private final List<MethodRegexAssociation> delegates;
-
-    public CompositeMethodRegexAssociation(MethodRegexAssociation... delegates) {
-      this(Arrays.asList(delegates));
-    }
-
-    public CompositeMethodRegexAssociation(List<MethodRegexAssociation> delegates) {
-      this.delegates = delegates;
-    }
-
-    public String findRegex(Method method) {
-      for (MethodRegexAssociation association : delegates) {
-        String regex = association.findRegex(method);
-        if (regex != null) {
-          return regex;
-        }
-      }
-      return null;
-    }
-
-    public Set<Method> getMethods(Scope scope) {
-      Set<Method> methods = new HashSet<Method>();
-      for (MethodRegexAssociation association : delegates) {
-        methods.addAll(association.getMethods(scope));
-      }
-      return methods;
-    }
   }
 
   @Target({ElementType.METHOD})
