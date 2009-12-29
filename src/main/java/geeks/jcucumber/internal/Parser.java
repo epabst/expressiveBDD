@@ -28,7 +28,7 @@ public class Parser {
 
   public Parser(ResultPublisher resultPublisher, final Scope stepsScope) {
     ObjectFactory stepsObjectFactory = new DefaultObjectFactory();
-    stepsObjectFactory.addInstance(ObjectFactory.class, stepsObjectFactory);
+    stepsObjectFactory.addInstance(Expressive.class, new Expressive(stepsObjectFactory));
     stepsObjectFactory.addInstance(Scope.class, stepsScope);
     this.stepMother = stepsObjectFactory.getInstance(JCucumberStepMother.class);
     //make StepMother available for constructor injection of steps components
