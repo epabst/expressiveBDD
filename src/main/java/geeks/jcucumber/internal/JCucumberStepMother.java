@@ -2,10 +2,7 @@ package geeks.jcucumber.internal;
 
 import cuke4duke.*;
 import geeks.jcucumber.Transform;
-import geeks.expressive.MethodRegexAssociation;
-import geeks.expressive.AnnotationMethodRegexAssociation;
-import geeks.expressive.AnnotationMethodSpecifier;
-import geeks.expressive.Scope;
+import geeks.expressive.*;
 
 import java.util.List;
 import java.util.Arrays;
@@ -19,22 +16,24 @@ import java.lang.reflect.Method;
  * @author pabstec
  */
 public class JCucumberStepMother implements StepMother {
-  private final ScenarioContext scenarioContext;
   public static final AnnotationMethodRegexAssociation GIVEN_ASSOCIATION = new AnnotationMethodRegexAssociation(Given.class);
   public static final AnnotationMethodRegexAssociation WHEN_ASSOCIATION = new AnnotationMethodRegexAssociation(When.class);
   public static final AnnotationMethodRegexAssociation THEN_ASSOCIATION = new AnnotationMethodRegexAssociation(Then.class);
+  private static final MethodRegexAssociation STEP_ASSOCIATION = new CompositeMethodRegexAssociation(
+          GIVEN_ASSOCIATION, WHEN_ASSOCIATION, THEN_ASSOCIATION);
   public static final AnnotationMethodRegexAssociation TRANSFORM_ASSOCIATION = new AnnotationMethodRegexAssociation(Transform.class);
   public static final AnnotationMethodSpecifier BEFORE_SPECIFIER = new AnnotationMethodSpecifier(Before.class);
   public static final AnnotationMethodSpecifier AFTER_SPECIFIER = new AnnotationMethodSpecifier(After.class);
+  private final Expressive expressive;
+  private final Scope stepsScope;
 
-  public JCucumberStepMother(ScenarioContext scenarioContext) {
-    this.scenarioContext = scenarioContext;
+  public JCucumberStepMother(Expressive expressive, Scope stepsScope) {
+    this.expressive = expressive;
+    this.stepsScope = stepsScope;
   }
 
   public void invoke(String step) {
-    MethodRegexAssociation regexAssociation = new CompositeMethodRegexAssociation(
-            GIVEN_ASSOCIATION, WHEN_ASSOCIATION, THEN_ASSOCIATION);
-    ScenarioContext.execute(scenarioContext.expressive, scenarioContext.stepsScope, step, regexAssociation);
+    invoke(step, STEP_ASSOCIATION);
   }
 
   /**
@@ -53,6 +52,14 @@ public class JCucumberStepMother implements StepMother {
    */
   public void invoke(String step, String multiLineString) {
     throw new UnsupportedOperationException("not implemented yet");
+  }
+
+  public void invoke(String step, MethodRegexAssociation regexAssociation) {
+    expressive.execute(step, regexAssociation, TRANSFORM_ASSOCIATION, stepsScope);
+  }
+
+  public void invokeEvent(MethodSpecifier eventSpecifier) {
+    expressive.executeEvent(eventSpecifier, stepsScope);
   }
 
   private static class CompositeMethodRegexAssociation implements MethodRegexAssociation {
