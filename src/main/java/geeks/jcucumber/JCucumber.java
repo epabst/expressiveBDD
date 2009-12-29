@@ -46,9 +46,9 @@ public class JCucumber {
   public void run(Reader reader, Scope stepsScope) throws IOException {
     BufferedReader bufferedReader = new BufferedReader(reader);
     Parser parser = new Parser(resultPublisher, stepsScope);
-    ObjectFactory objectFactory = new DefaultObjectFactory();
-    objectFactory.addInstance(Parser.class, parser);
-    new Expressive(objectFactory).execute(bufferedReader, COMMAND_ASSOCIATION, TRANSFORM_ASSOCIATION, parserScope);
+    ObjectFactory parserObjectFactory = new DefaultObjectFactory();
+    parserObjectFactory.addInstance(Parser.class, parser);
+    new Expressive(parserObjectFactory).execute(bufferedReader, COMMAND_ASSOCIATION, TRANSFORM_ASSOCIATION, parserScope);
     parser.finished();
   }
 
@@ -58,35 +58,42 @@ public class JCucumber {
    * @author pabstec
    */
   static class ScenarioContext {
-    private final ObjectFactory objectFactory = new DefaultObjectFactory();
-    private final Expressive expressive = new Expressive(objectFactory);
+    private final Expressive expressive;
     private final Scope stepsScope;
 
-    public ScenarioContext(final Scope stepsScope) {
+    public ScenarioContext(final Scope stepsScope, ObjectFactory objectFactory) {
       this.stepsScope = stepsScope;
-      objectFactory.addInstance(StepMother.class, new StepMother() {
-        public void invoke(String step) {
-          MethodRegexAssociation regexAssociation = new CompositeMethodRegexAssociation(
-                  GIVEN_ASSOCIATION, WHEN_ASSOCIATION, THEN_ASSOCIATION);
-          execute(step, regexAssociation);
-        }
-
-        public void invoke(String step, Table table) {
-          throw new UnsupportedOperationException("not implemented yet");
-        }
-
-        public void invoke(String step, String multiLineString) {
-          throw new UnsupportedOperationException("not implemented yet");
-        }
-      });
+      expressive = new Expressive(objectFactory);
     }
 
-    protected void execute(String step, MethodRegexAssociation regexAssociation) {
+    protected static void execute(Expressive expressive, Scope stepsScope, String step, MethodRegexAssociation regexAssociation) {
       expressive.execute(step, regexAssociation, TRANSFORM_ASSOCIATION, stepsScope);
     }
 
-    protected void executeEvent(MethodSpecifier eventSpecifier) {
+    protected static void executeEvent(Expressive expressive, Scope stepsScope, MethodSpecifier eventSpecifier) {
       expressive.executeEvent(eventSpecifier, stepsScope);
+    }
+  }
+
+  private static class JCucumberStepMother implements StepMother {
+    private final ScenarioContext scenarioContext;
+
+    public JCucumberStepMother(ScenarioContext scenarioContext) {
+      this.scenarioContext = scenarioContext;
+    }
+
+    public void invoke(String step) {
+      MethodRegexAssociation regexAssociation = new CompositeMethodRegexAssociation(
+              GIVEN_ASSOCIATION, WHEN_ASSOCIATION, THEN_ASSOCIATION);
+      ScenarioContext.execute(scenarioContext.expressive, scenarioContext.stepsScope, step, regexAssociation);
+    }
+
+    public void invoke(String step, Table table) {
+      throw new UnsupportedOperationException("not implemented yet");
+    }
+
+    public void invoke(String step, String multiLineString) {
+      throw new UnsupportedOperationException("not implemented yet");
     }
   }
 
@@ -96,13 +103,17 @@ public class JCucumber {
    * @author pabstec
    */
 
-  private static class Parser extends ScenarioContext {
+  private static class Parser {
     private Mode mode = Mode.NONE;
     private final ResultPublisher resultPublisher;
     private int stepFailedCountForScenario;
+    private final ScenarioContext scenarioContext;
 
     private Parser(ResultPublisher resultPublisher, final Scope stepsScope) {
-      super(stepsScope);
+      ObjectFactory objectFactory = new DefaultObjectFactory();
+      scenarioContext = new ScenarioContext(stepsScope, objectFactory);
+      StepMother stepMother = new JCucumberStepMother(scenarioContext);
+      objectFactory.addInstance(StepMother.class, stepMother);
       this.resultPublisher = resultPublisher;
     }
 
@@ -114,11 +125,11 @@ public class JCucumber {
         else {
           resultPublisher.succeeded();
         }
-        executeEvent(AFTER_SPECIFIER);
+        ScenarioContext.executeEvent(scenarioContext.expressive, scenarioContext.stepsScope, AFTER_SPECIFIER);
       }
       else if (this.mode == Mode.IN_FEATURE && mode == Mode.IN_SCENARIO_BEFORE_WHEN) {
         stepFailedCountForScenario = 0;
-        executeEvent(BEFORE_SPECIFIER);
+        ScenarioContext.executeEvent(scenarioContext.expressive, scenarioContext.stepsScope, BEFORE_SPECIFIER);
       }
       this.mode = mode;
     }
@@ -178,7 +189,7 @@ public class JCucumber {
 
     private void executeStepAndWriteString(String stepLine, String step, AnnotationMethodRegexAssociation annotationAssociation) {
       try {
-        execute(step, annotationAssociation);
+        ScenarioContext.execute(scenarioContext.expressive, scenarioContext.stepsScope, step, annotationAssociation);
         resultPublisher.stepPassed(stepLine);
       } catch (Exception e) {
         stepFailedCountForScenario++;
