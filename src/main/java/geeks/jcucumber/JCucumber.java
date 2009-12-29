@@ -29,7 +29,8 @@ public class JCucumber {
     ObjectFactory parserObjectFactory = new DefaultObjectFactory();
     parserObjectFactory.addInstance(ResultPublisher.class, resultPublisher);
     parserObjectFactory.addInstance(Scope.class, stepsScope);
-    new Expressive(parserObjectFactory).execute(new BufferedReader(reader), Parser.COMMAND_ASSOCIATION,
+    Expressive parserExpressive = new Expressive(parserObjectFactory);
+    parserExpressive.execute(new BufferedReader(reader), Parser.COMMAND_ASSOCIATION,
             MethodRegexAssociation.NONE, Scopes.asScope(Parser.class));
     parserObjectFactory.getInstance(Parser.class).finished();
   }
