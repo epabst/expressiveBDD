@@ -27,10 +27,13 @@ public class TestJCucumber {
 
   @Test
   public void shouldSupportCucumber() throws IOException {
-    URL featureUrl = getClass().getResource("features/Addition.feature");
-    assertNotNull(featureUrl, "features/Addition.feature should be available");
+    URL feature1Url = getClass().getResource("features/Addition.feature");
+    assertNotNull(feature1Url, "features/Addition.feature should be available");
+    URL feature2Url = getClass().getResource("features/Division.feature");
+    assertNotNull(feature2Url, "features/Division.feature should be available");
 
-    cucumber.run(featureUrl, Scopes.asScope(CalculatorSteps.class.getPackage()));
+    Scope scope = Scopes.asScope(CalculatorSteps.class.getPackage());
+    cucumber.run(feature1Url, scope);
     System.out.println(stringWriter.toString());
     assertEquals(resultPublisher.getScenarioCount(), 4);
     assertEquals(resultPublisher.getFailedCount(), 1);
@@ -39,6 +42,15 @@ public class TestJCucumber {
     assertSubstring(output, "Scenario: 1+1");
     assertSubstring(output, "Then the result should be \"3\"");
     assertSubstring(output, "FAILED:    Then the result should be \"1\"");
+
+    cucumber.run(feature2Url, scope);
+    System.out.println(stringWriter.toString());
+    assertEquals(resultPublisher.getScenarioCount(), 4 + 3);
+    assertEquals(resultPublisher.getFailedCount(), 1 + 1);
+    output = stringWriter.toString();
+    assertSubstring(output, "Feature: Division Using the Calculator");
+    assertSubstring(output, "Scenario: intentionally cause a problem");
+    assertSubstring(output, "FAILED:    When I push \"/\"");
   }
 
   @Test

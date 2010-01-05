@@ -46,6 +46,17 @@ public class CalculatorSteps {
     LOGGER.log(DEBUG_LEVEL, "stack after +: " + stack);
   }
 
+  @When("^I push \"\\/\"$")
+  public void divide() {
+    assertEquals(runCountFromLastWhen, runCount - 1, "run count should match");
+    runCountFromLastWhen = runCount;
+    LOGGER.log(DEBUG_LEVEL, "stack before +: " + stack);
+    Integer divisor = stack.pop();
+    Integer dividend = stack.pop();
+    stack.push(dividend / divisor);
+    LOGGER.log(DEBUG_LEVEL, "stack after +: " + stack);
+  }
+
   @Then("^the result should be \"([0-9]+)\"$")
   public void theResultShouldBe(int expectedResult) {
     int result = stack.peek();
