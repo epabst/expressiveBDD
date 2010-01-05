@@ -1,0 +1,10 @@
+== 0.8.2 2010-01-05
+
+=== New features
+* Each line in a feature is flushed as it completes.
+
+
+== 0.8.1 2010-01-05
+
+=== New Features
+* Upgraded to expressive 0.7.1
