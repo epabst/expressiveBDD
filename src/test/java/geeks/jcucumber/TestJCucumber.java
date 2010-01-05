@@ -34,7 +34,7 @@ public class TestJCucumber {
 
     Scope scope = Scopes.asScope(CalculatorSteps.class.getPackage());
     cucumber.run(feature1Url, scope);
-    System.out.println(stringWriter.toString());
+    println(stringWriter.toString());
     assertEquals(resultPublisher.getScenarioCount(), 4);
     assertEquals(resultPublisher.getFailedCount(), 1);
     String output = stringWriter.toString();
@@ -44,13 +44,18 @@ public class TestJCucumber {
     assertSubstring(output, "FAILED:    Then the result should be \"1\"");
 
     cucumber.run(feature2Url, scope);
-    System.out.println(stringWriter.toString());
+    println(stringWriter.toString());
     assertEquals(resultPublisher.getScenarioCount(), 4 + 3);
     assertEquals(resultPublisher.getFailedCount(), 1 + 1);
     output = stringWriter.toString();
     assertSubstring(output, "Feature: Division Using the Calculator");
     assertSubstring(output, "Scenario: intentionally cause a problem");
     assertSubstring(output, "FAILED:    When I push \"/\"");
+  }
+
+  private void println(String string) {
+    System.out.println(string);
+    System.out.flush();
   }
 
   @Test
