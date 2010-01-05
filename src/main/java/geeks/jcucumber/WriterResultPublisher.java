@@ -29,6 +29,7 @@ public class WriterResultPublisher implements ResultPublisher {
 
   public void writeln(String string) {
     writer.println(string);
+    writer.flush();
   }
 
   public void startScenario(String scenarioName) {
